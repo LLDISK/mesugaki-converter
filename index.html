@@ -15,58 +15,123 @@
             }
             return to.concat(ar || Array.prototype.slice.call(from));
         };
-        var toword = [
-            "하앙",
-            "하읏",
-            "흐응",
-            "하우",
-            "하아",
-            "흐읏",
-            "하앙하읏",
-            "아앙",
-            "...♡",
-            "...♥",
-            "아흐응..♥",
-            "아학",
-            "아흣",
-            "응뇨베~",
-            "뀽뀽♡",
-            "응기잇",
-            "으뇨..",
-            "으뇨뇩!",
-            "앙",
-            "헤으응~"
-        ];
-        var badword = [
-            [/지[이]*랄/],
-            [/시[이]*발/, /씨[이]*발/],
-            [/병신/, /벼[엉]*신/],
-            [/바보/],
-            [/멍청이/, /멍청아/],
-            [/또라이/],
-            [/개새끼/],
-            [/미친/, /미쳐/],
-            [/답 *없는/],
-            [/구제불능/],
-            [/나가 *뒤져/],
-            [/년/],
-            [/놈/],
-            [/새끼/],
-            [/존나/],
-            [/좆/],
-            [/ 개 /],
-            [/빡치/, /빡쳐/]
-        ];
-        // "개" 처럼 애매한 애들은 다른애들과 붙어있으면 욕으로 되게 하면 좋다.
-        //~네 는 ~누 ~노 랑 같은이기 때문에 치환해서 재검사 하는것도 좋을 것 같다.
+        var toword;
+        var badword;
+        
+        tow()
+        badw()
+        check();
+        var start_text = "*";
+
+        // ~네 는 ~누 ~노 랑 같기 때문에 치환해서 또검사 하는것도 좋을 것 같다.
         // 글자 사이사이에 [1|2|3|4|5|!|@|#|$|%]* 추가하면 많이쓰는 우회수단을 막을 수 있다.
+        // toword 앞뒤로 띄어쓰기 있으면 좋겠다 싶다.
 
         // toword 는 \n 으로 나눠서 배열에 추가
         // badword 는 \n 으로 나누고 안에서 , 으로 나눠서
-        badword_global();
-        check();
-        var start_text = "*";
-        //toword 앞뒤로 띄어쓰기 있으면 좋겠다 싶다.
+        function tow() {
+            var out = `하앙
+하읏
+하으읏
+흐응
+하우
+하아
+흐읏
+아앙
+...♡
+...♥
+아흐응♥
+아학
+아흑
+흐으읏
+하악
+핳
+흫♡
+으응~♡
+으으♥
+가버렷!!
+읏♡
+으읏..♥
+아흣
+하,으읏..
+ㄱ,거기.ㄴ..
+그,..그만!!~♡
+하흣
+응뇨베~
+뀽♡뀽
+응기잇
+읏,뀨웅~
+으뇨..
+으뇨뇩!
+앙♡
+헤으응~`;
+
+            toword = out.split("\n");
+        }
+        function badw() {
+            var out = `지〓이*랄
+시〓이*발,씨〓이*발,싸〓아*발
+병〓신,벼〓엉*신
+바보
+멍청이,멍청아
+또〓라이
+미〓친,미쳐
+답 *없는
+노답
+구제불능
+인생 *말.,니인생
+자빠졌네
+뒤져라?,뒤진,뒤지
+년,련
+놈
+더럽,더러.
+역겹,역겨
+죽〓어,죽고
+돌아가[시|셔|셨]
+자〓아*살
+때[리|려|렸]
+패[고|다|지]
+맞[고|을]
+맞다이,맛다이,맏다이
+찐〓따,은따
+아싸
+[새|세]〓애*끼,[새|세]꺄
+존〓나,조〓온*나
+좆,졷,좃
+자위
+빡치,빡〓쳐
+장〓애〓인
+꼽〓냐,꼬〓아,꼽〓아
+씹?보〓지
+불〓알,붕〓알,뽕〓알
+걸〓레,걸〓래
+자〓지
+야동
+정액
+포기
+근친
+애〓미,엄마,어머니
+애〓비,아빠,아버지
+앰〓창
+씹〓창
+^개 
+ 개 `;
+            let one = out.split("\n");
+            let two = [];
+
+            for (let i = 0; i < one.length; i++) {
+                const e = one[i];
+                let tmp = e.split(",");
+                let tmp2 = [];
+                tmp.forEach((a) => {
+                    tmp2.push(new RegExp(`개?처?쳐?씹?[개1|개2|개3|개4|개5|개!|개@|개#|개$|개%]*${a.replace("〓","[1|2|3|4|5|!|@|#|$|%]?")}`, "g"));
+                });
+                two.push(tmp2);
+            }
+
+            badword = two;
+        }
+
         function check() {
             for (let i1 = 0; i1 < toword.length; i1++) {
                 const e1 = toword[i1];
@@ -88,7 +153,7 @@
                     continue;
                 }
             }
-
+            
             let baderror = false;
             for (let i1 = 0; i1 < badword.length; i1++) {
                 const a = badword[i1];
@@ -168,17 +233,6 @@
                 out[b] = " ".concat(a, " ");
             });
             return out;
-        }
-        function badword_global() {
-            var out = __spreadArray([], badword, true);
-            badword.forEach(function (a, b) {
-                let temp = [];
-                a.forEach(function (a) {
-                    temp.push(new RegExp(a, "g"));
-                });
-                out[b] = temp;
-            });
-            badword = out;
         }
         function Array_over(count, array) {
             if (count >= array.length) {
@@ -326,24 +380,6 @@
             outline: none;
         }
 
-        #change_btn {
-            margin-top: 15px;
-            padding: 8px 0 8px 0;
-            border: 0;
-
-            border-radius: 5px;
-
-            background-color: #797979;
-            color: #cacaca;
-
-            transition-duration: 0.3s;
-            cursor: pointer;
-        }
-
-        #change_btn:hover {
-            background-color: #131313;
-        }
-
         .space {
             width: 50px;
             height: 50px;
@@ -373,6 +409,8 @@
     <div id="col">
         <div id="alert">
             욕이 포함되어있는 내용을 입력하면 메스가키 버전으로 수정된 내용이 아래에 나타납니다
+            <br>
+            욕이 아닌 단어도 욕이라 판단되어 수정될 수 있어요
             <br>
             등록되어있지 않은 욕은 변환되지 않습니다
         </div>
