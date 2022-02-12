@@ -3,7 +3,7 @@
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Page Title</title>
+    <title>메스가키 컨버터</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script>
         var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
@@ -55,6 +55,7 @@
             [/좆/],
         ];
         badword = badword_global(badword);
+        var start_text = "*";
         function change() {
             let input = $("#input").val();
             let result = $("#result");
@@ -73,6 +74,9 @@
                     var badregex = badarray[i];
                     out = out.replace(badregex, toword[Array_over(badarraycount, toword)]);
                 }
+            }
+            if (out == "" || out == undefined) {
+                return start_text;
             }
             return out;
         }
@@ -103,6 +107,12 @@
         function Random_min_max(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
+        window.onload = function () {
+            $('#input').bind('input propertychange', function() {
+                change();
+            });
+            start_text = $("#result").text();
+        }
     </script>
     <style>
         @font-face {
@@ -116,7 +126,6 @@
             margin: 0;
             font-family: 'all';
             font-size: large;
-
             box-sizing: border-box;
         }
 
@@ -124,42 +133,59 @@
             height: 100vh;
             width: 100vw;
 
-            background-color: rgb(50, 50, 50, 1);
+            background-color: #323232;
 
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
+        body::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera*/
+        }
 
         #col {
             display: flex;
             flex-direction: column;
+
             flex-grow: 0;
+            flex-basis: auto;
         }
 
         #alert {
-            text-align: center;
-            margin-bottom: 10px;
-            opacity: 0.1;
             color: white;
+            opacity: 0.1;
+            font-size: 16px;
+
+            min-width: 100vw;
             max-width: 100vw;
-            word-wrap: break-word;
-            font-size: medium;
+            margin-bottom: 10px;
+
+            word-break: keep-all;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
         }
 
         #input {
             background-color: #424242;
+            color: #cacaca;
+
             border-radius: 5px;
+            padding: 3px 6px 3px 6px;
+
             min-width: 100vw;
             min-height: 30vh;
             max-width: 100vw;
             max-height: 30vh;
+
             white-space: pre;
             overflow-wrap: normal;
             overflow: scroll;
-            color: #cacaca;
-            padding: 3px 6px 3px 6px;
         }
         ::-webkit-scrollbar {
             background-color: #00000000;
@@ -174,31 +200,51 @@
             background-color: #00000000;
             border-radius: 1000px;
         }
-        #input::-webkit-resizer {
+        ::-webkit-resizer {
             background-color: #424242;
+        }
+        #input:focus {
+            outline: none;
         }
 
         #change_btn {
             margin-top: 15px;
             padding: 8px 0 8px 0;
-            border-radius: 5px;
             border: 0;
+
+            border-radius: 5px;
+
             background-color: #797979;
             color: #cacaca;
+
+            transition-duration: 0.3s;
+            cursor: pointer;
+        }
+
+        #change_btn:hover {
+            background-color: #131313;
         }
 
         .space {
             width: 50px;
             height: 50px;
             flex-grow: 0;
+            flex-basis: 50px;
         }
 
         #result {
             color: #cacaca;
+
             padding: 10px;
+            max-width: 100vw;
+            min-height: 50px;
+
             word-wrap: break-word;
             overflow-y: scroll;
+
             flex-grow: 1;
+            flex-shrink: 0;
+            flex-basis: 0;
         }
     </style>
 </head>
@@ -207,12 +253,14 @@
     <div class="space"></div>
     <div id="col">
         <div id="alert">
-            등록되어있지 않은 욕은 변환되지 않습니다.
+            욕이 포함되어있는 내용을 입력하면 메스가키 버전으로 수정된 내용이 아래에 나타납니다
+            <br>
+            등록되어있지 않은 욕은 변환되지 않습니다
         </div>
         <textarea name="input" id="input" spellcheck = "false"  placeholder="욕이 포함된 내용을 입력하세요."></textarea>
-        <button id="change_btn" onclick="change();">메스가키화</button>
     </div>
     <div class="space"></div>
     <div id="result">결과 출력되는 곳.</div>
+    <div class="space"></div>
 </body>
 </html>
