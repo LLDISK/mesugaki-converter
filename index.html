@@ -30,10 +30,11 @@
             "아학",
             "아흣",
             "응뇨베~",
-            "뀽뀽",
+            "뀽뀽♡",
             "응기잇",
             "으뇨..",
             "으뇨뇩!",
+            "앙",
         ];
         var badword = [
             [/지랄/],
@@ -46,17 +47,90 @@
             [/미친/, /미쳐/],
             [/답 *없는/],
             [/구제불능/],
-            [/나가 *뒤져라/],
+            [/나가 *뒤져/],
             [/년/],
             [/놈/],
             [/새끼/],
             [/존나/],
-            [/좆/]
-        ];
+            [/좆/],
+            [/ 개 /],
+            [/빡치/, /빡쳐/]
+        ]; // "개" 처럼 애매한 애들은 다른애들과 붙어있으면 욕으로 되게 하면 좋다.
         badword_global();
-        badword_sort();
+        check();
         var start_text = "*";
         //toword 앞뒤로 띄어쓰기 있으면 좋겠다 싶다.
+        function check() {
+            for (let i1 = 0; i1 < toword.length; i1++) {
+                const e1 = toword[i1];
+                let conti = false;
+                for (let i2 = i1+1; i2 < toword.length; i2++) {
+                    const e2 = toword[i2];
+                    if (e1 == e2) {
+                        console.error(`
+                        toword에 겹치는게 있습니다.
+                        겹친 문자: ${e1}
+                        겹친 위치: ${i1}, ${i2}
+                        `);
+                        toword.splice(i2, 1);
+                        conti = true;
+                    }
+                }
+                if (conti) {
+                    i1 = -1;
+                    continue;
+                }
+            }
+
+            let baderror = false;
+            for (let i1 = 0; i1 < badword.length; i1++) {
+                const a = badword[i1];
+                let conti = false;
+                for (let i2 = i1 + 1; i2 < badword.length; i2++) {
+                    const b = badword[i2];
+                    let aa = [];
+                    let bb = [];
+                    for (let i = 0; i < a.length; i++) {
+                        const e = a[i];
+                        aa.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+                    for (let i = 0; i < b.length; i++) {
+                        const e = b[i];
+                        bb.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+
+                    for (let i3 = 0; i3 < aa.length; i3++) {
+                        const aaa = aa[i3];
+                        for (let i4 = 0; i4 < bb.length; i4++) {
+                            const bbb = bb[i4];
+                            if (bbb == aaa) {
+                                console.error(`
+                                    badword에 겹치는게 있습니다.
+                                    겹친 문자: ${aaa}
+                                    겹친 위치: ${i1}, ${i2}
+                                    `);
+                                baderror = true;
+                                badword[i2].splice(i4, 1);
+                                for (let ii = 0; ii < badword.length; ii++) {
+                                    const e = badword[ii];
+                                    if (e == []) {
+                                        badword.splice(ii, 1);
+                                    }
+                                }
+                                conti = true;
+                            }
+                        }
+                    }
+                }
+                if (conti) {
+                    i1 = -1;
+                    continue;
+                }
+            }
+            if (!baderror) {
+                badword_sort();
+            }
+        }
         function change() {
             let input = $("#input").val();
             let result = $("#result");
@@ -138,7 +212,7 @@
                     }
                 }
                 if (conti) {
-                    i1 == 0;
+                    i1 = -1;
                     continue;
                 }
             }
