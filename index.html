@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>메스가키 컨버터</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script>
+        var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+            if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+                if (ar || !(i in from)) {
+                    if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                    ar[i] = from[i];
+                }
+            }
+            return to.concat(ar || Array.prototype.slice.call(from));
+        };
+        var toword = [
+            "하앙",
+            "하읏",
+            "흐응",
+            "하우",
+            "하아",
+            "흐읏",
+            "하앙하읏",
+            "아앙",
+            "...♡",
+            "...♥",
+            "아흐응..♥",
+            "아학",
+            "아흣",
+            "응뇨베~",
+            "뀽뀽♡",
+            "응기잇",
+            "으뇨..",
+            "으뇨뇩!",
+            "앙",
+            "헤으응~"
+        ];
+        var badword = [
+            [/지[이]*랄/],
+            [/시[이]*발/, /씨[이]*발/],
+            [/병신/, /벼[엉]*신/],
+            [/바보/],
+            [/멍청이/, /멍청아/],
+            [/또라이/],
+            [/개새끼/],
+            [/미친/, /미쳐/],
+            [/답 *없는/],
+            [/구제불능/],
+            [/나가 *뒤져/],
+            [/년/],
+            [/놈/],
+            [/새끼/],
+            [/존나/],
+            [/좆/],
+            [/ 개 /],
+            [/빡치/, /빡쳐/]
+        ];
+        // "개" 처럼 애매한 애들은 다른애들과 붙어있으면 욕으로 되게 하면 좋다.
+        //~네 는 ~누 ~노 랑 같은이기 때문에 치환해서 재검사 하는것도 좋을 것 같다.
+        // 글자 사이사이에 [1|2|3|4|5|!|@|#|$|%]* 추가하면 많이쓰는 우회수단을 막을 수 있다.
+
+        // toword 는 \n 으로 나눠서 배열에 추가
+        // badword 는 \n 으로 나누고 안에서 , 으로 나눠서
+        badword_global();
+        check();
+        var start_text = "*";
+        //toword 앞뒤로 띄어쓰기 있으면 좋겠다 싶다.
+        function check() {
+            for (let i1 = 0; i1 < toword.length; i1++) {
+                const e1 = toword[i1];
+                let conti = false;
+                for (let i2 = i1+1; i2 < toword.length; i2++) {
+                    const e2 = toword[i2];
+                    if (e1 == e2) {
+                        console.error(`
+                        toword에 겹치는게 있습니다.
+                        겹친 문자: ${e1}
+                        겹친 위치: ${i1}, ${i2}
+                        `);
+                        toword.splice(i2, 1);
+                        conti = true;
+                    }
+                }
+                if (conti) {
+                    i1 = -1;
+                    continue;
+                }
+            }
+
+            let baderror = false;
+            for (let i1 = 0; i1 < badword.length; i1++) {
+                const a = badword[i1];
+                let conti = false;
+                for (let i2 = i1 + 1; i2 < badword.length; i2++) {
+                    const b = badword[i2];
+                    let aa = [];
+                    let bb = [];
+                    for (let i = 0; i < a.length; i++) {
+                        const e = a[i];
+                        aa.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+                    for (let i = 0; i < b.length; i++) {
+                        const e = b[i];
+                        bb.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+
+                    for (let i3 = 0; i3 < aa.length; i3++) {
+                        const aaa = aa[i3];
+                        for (let i4 = 0; i4 < bb.length; i4++) {
+                            const bbb = bb[i4];
+                            if (bbb == aaa) {
+                                console.error(`
+                                    badword에 겹치는게 있습니다.
+                                    겹친 문자: ${aaa}
+                                    겹친 위치: ${i1}, ${i2}
+                                    `);
+                                baderror = true;
+                                badword[i2].splice(i4, 1);
+                                for (let ii = 0; ii < badword.length; ii++) {
+                                    const e = badword[ii];
+                                    if (e == []) {
+                                        badword.splice(ii, 1);
+                                    }
+                                }
+                                conti = true;
+                            }
+                        }
+                    }
+                }
+                if (conti) {
+                    i1 = -1;
+                    continue;
+                }
+            }
+            if (!baderror) {
+                badword_sort();
+            }
+        }
+        function change() {
+            let input = $("#input").val();
+            let result = $("#result");
+    
+            result.html(
+                BadTo19(input)
+                .replace(/[\r\n|\n|\r]+/g, "<br>")
+                .replace(/ /g, "&nbsp;")
+                );
+        }
+        function BadTo19(text) {
+            var out = text;
+            for (var badarraycount = 0; badarraycount < badword.length; badarraycount++) {
+                var badarray = badword[badarraycount];
+                for (var i = 0; i < badarray.length; i++) {
+                    var badregex = badarray[i];
+                    out = out.replace(badregex, toword[Array_over(badarraycount, toword)]);
+                }
+            }
+            if (out == "" || out == undefined) {
+                return start_text;
+            }
+            return out;
+        }
+        function front_back_space() {
+            var out = __spreadArray([], toword, true);
+            toword.forEach(function (a, b) {
+                out[b] = " ".concat(a, " ");
+            });
+            return out;
+        }
+        function badword_global() {
+            var out = __spreadArray([], badword, true);
+            badword.forEach(function (a, b) {
+                let temp = [];
+                a.forEach(function (a) {
+                    temp.push(new RegExp(a, "g"));
+                });
+                out[b] = temp;
+            });
+            badword = out;
+        }
+        function Array_over(count, array) {
+            if (count >= array.length) {
+                return Random_min_max(0, array.length - 1);
+            }
+            return count;
+        }
+        function Random_min_max(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        function badword_sort() {
+            for (let i1 = 0; i1 < badword.length; i1++) {
+                const a = badword[i1];
+                let conti = false;
+                for (let i2 = i1 + 1; i2 < badword.length; i2++) {
+                    const b = badword[i2];
+                    let aa = [];
+                    let bb = [];
+                    for (let i = 0; i < a.length; i++) {
+                        const e = a[i];
+                        aa.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+                    for (let i = 0; i < b.length; i++) {
+                        const e = b[i];
+                        bb.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+
+                    for (let i = 0; i < aa.length; i++) {
+                        const aaa = aa[i];
+                        for (let i = 0; i < bb.length; i++) {
+                            const bbb = bb[i];
+                            if (bbb.includes(aaa)) {
+                                let temp = badword.splice(i2, 1);
+                                badword.splice(i1, 0, temp[0]);
+                                conti = true;
+                            }
+                        }
+                    }
+                }
+                if (conti) {
+                    i1 = -1;
+                    continue;
+                }
+            }
+        }
+        window.onload = function () {
+            $('#input').bind('input propertychange', function() {
+                change();
+            });
+            start_text = $("#result").text();
+        }
+    </script>
+    <style>
+        @font-face {
+            font-family: 'all';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            font-family: 'all';
+            font-size: large;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+
+            background-color: #323232;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        body::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera*/
+        }
+
+        #col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            flex-grow: 0;
+            flex-basis: auto;
+        }
+
+        #alert {
+            color: white;
+            opacity: 0.1;
+            font-size: 16px;
+
+            min-width: 100vw;
+            max-width: 100vw;
+            margin-bottom: 10px;
+
+            word-break: keep-all;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+        }
+
+        #input {
+            background-color: #424242;
+            color: #cacaca;
+
+            border-radius: 5px;
+            padding: 3px 6px 3px 6px;
+
+            min-width: 95vw;
+            min-height: 30vh;
+            max-width: 95vw;
+            max-height: 30vh;
+
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow: scroll;
+        }
+        ::-webkit-scrollbar {
+            background-color: #00000000;
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #97979741;
+            border-radius: 1000px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #00000000;
+            border-radius: 1000px;
+        }
+        ::-webkit-resizer {
+            background-color: #424242;
+        }
+        #input:focus {
+            outline: none;
+        }
+
+        #change_btn {
+            margin-top: 15px;
+            padding: 8px 0 8px 0;
+            border: 0;
+
+            border-radius: 5px;
+
+            background-color: #797979;
+            color: #cacaca;
+
+            transition-duration: 0.3s;
+            cursor: pointer;
+        }
+
+        #change_btn:hover {
+            background-color: #131313;
+        }
+
+        .space {
+            width: 50px;
+            height: 50px;
+            flex-grow: 0;
+            flex-basis: 50px;
+        }
+
+        #result {
+            color: #cacaca;
+
+            padding: 10px;
+            max-width: 95vw;
+            min-height: 50px;
+
+            word-wrap: break-word;
+            overflow-y: scroll;
+
+            flex-grow: 1;
+            flex-shrink: 0;
+            flex-basis: 0;
+        }
+    </style>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<body>
+    <div class="space"></div>
+    <div id="col">
+        <div id="alert">
+            욕이 포함되어있는 내용을 입력하면 메스가키 버전으로 수정된 내용이 아래에 나타납니다
+            <br>
+            등록되어있지 않은 욕은 변환되지 않습니다
+        </div>
+        <textarea name="input" id="input" spellcheck = "false"  placeholder="욕이 포함된 내용을 입력하세요."></textarea>
+    </div>
+    <div class="space"></div>
+    <div id="result">결과 출력되는 곳.</div>
+    <div class="space"></div>
+</body>
+</html>
