@@ -35,7 +35,6 @@
             "으뇨..",
             "으뇨뇩!",
         ];
-        front_back_space(toword);
         var badword = [
             [/지랄/],
             [/시발/, /씨발/],
@@ -52,10 +51,12 @@
             [/놈/],
             [/새끼/],
             [/존나/],
-            [/좆/],
+            [/좆/]
         ];
-        badword = badword_global(badword);
+        badword_global();
+        badword_sort();
         var start_text = "*";
+        //toword 앞뒤로 띄어쓰기 있으면 좋겠다 싶다.
         function change() {
             let input = $("#input").val();
             let result = $("#result");
@@ -80,23 +81,23 @@
             }
             return out;
         }
-        function front_back_space(array) {
-            var out = __spreadArray([], array, true);
-            array.forEach(function (a, b) {
+        function front_back_space() {
+            var out = __spreadArray([], toword, true);
+            toword.forEach(function (a, b) {
                 out[b] = " ".concat(a, " ");
             });
             return out;
         }
-        function badword_global(array) {
-            var out = __spreadArray([], array, true);
-            array.forEach(function (a, b) {
+        function badword_global() {
+            var out = __spreadArray([], badword, true);
+            badword.forEach(function (a, b) {
                 let temp = [];
                 a.forEach(function (a) {
                     temp.push(new RegExp(a, "g"));
                 });
                 out[b] = temp;
             });
-            return out;
+            badword = out;
         }
         function Array_over(count, array) {
             if (count >= array.length) {
@@ -106,6 +107,41 @@
         }
         function Random_min_max(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        function badword_sort() {
+            for (let i1 = 0; i1 < badword.length; i1++) {
+                const a = badword[i1];
+                let conti = false;
+                for (let i2 = i1 + 1; i2 < badword.length; i2++) {
+                    const b = badword[i2];
+                    let aa = [];
+                    let bb = [];
+                    for (let i = 0; i < a.length; i++) {
+                        const e = a[i];
+                        aa.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+                    for (let i = 0; i < b.length; i++) {
+                        const e = b[i];
+                        bb.push(e.toString().substring(1, e.toString().length - 2));
+                    }
+
+                    for (let i = 0; i < aa.length; i++) {
+                        const aaa = aa[i];
+                        for (let i = 0; i < bb.length; i++) {
+                            const bbb = bb[i];
+                            if (bbb.includes(aaa)) {
+                                let temp = badword.splice(i2, 1);
+                                badword.splice(i1, 0, temp[0]);
+                                conti = true;
+                            }
+                        }
+                    }
+                }
+                if (conti) {
+                    i1 == 0;
+                    continue;
+                }
+            }
         }
         window.onload = function () {
             $('#input').bind('input propertychange', function() {
